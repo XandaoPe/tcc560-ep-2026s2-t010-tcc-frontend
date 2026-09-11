@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Header } from './components/Header';
 import { MetricsOverview } from './components/MetricsOverview';
 import { SimulatorPanel } from './components/SimulatorPanel';
