@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { triggerSimulation } from '../services/api';
-import { Play, ShieldAlert, AlertTriangle, CheckCircle, Zap, Flame, RefreshCw, Touchpad, MousePointerClick, Sliders, Bot, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, ShieldAlert, AlertTriangle, CheckCircle, Zap, Flame, RefreshCw, Touchpad, MousePointerClick, Sliders, Bot, ChevronDown, ChevronUp, Factory } from 'lucide-react';
 
 interface SimulatorPanelProps {
     onEventSimulated: (scenarioId: string, zone: string) => void;
@@ -103,37 +103,56 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({ onEventSimulated
 
     return (
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mb-4 sm:mb-6 transition-all w-full">
-            <div className="bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-blue-600/10 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-blue-950/40 border border-blue-200 dark:border-blue-900/60 p-3.5 sm:p-4 rounded-xl mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div className="flex items-start sm:items-center gap-3">
-                    <div className="p-2 bg-blue-600 text-white rounded-lg shrink-0 mt-0.5 sm:mt-0 shadow-md">
-                        <MousePointerClick className="w-5 h-5 animate-bounce" />
+            {/* Bloco Explicativo com Imagem Real da Máquina no Chão de Fábrica */}
+            <div className="bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-blue-600/10 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-blue-950/40 border border-blue-200 dark:border-blue-900/60 p-4 rounded-xl mb-5 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    {/* Imagem Real da Injetora Industrial */}
+                    <div className="relative shrink-0 w-24 h-20 sm:w-28 sm:h-22 rounded-xl overflow-hidden border-2 border-blue-500/30 shadow-md">
+                        <img
+                            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80"
+                            alt="Injetora Industrial ROMI em Produção"
+                            className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-blue-950/20 flex items-end p-1">
+                            <span className="text-[9px] font-bold text-white bg-blue-600/90 px-1.5 py-0.2 rounded backdrop-blur-xs flex items-center gap-1">
+                                <Factory className="w-2.5 h-2.5" /> ROMI Chão de Fábrica
+                            </span>
+                        </div>
                     </div>
+
                     <div>
-                        <h3 className="text-xs sm:text-sm font-bold text-blue-900 dark:text-blue-200 uppercase tracking-wide">Painel Interativo de Simulação Industrial</h3>
-                        <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-                            Escolha a <strong>Zona Alvo</strong>, acione a <strong>Máquina Virtual Automática</strong> ou abra os botões manuais.
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="p-1.5 bg-blue-600 text-white rounded-lg shadow-md">
+                                <MousePointerClick className="w-4 h-4 animate-bounce" />
+                            </span>
+                            <h3 className="text-xs sm:text-sm font-extrabold text-blue-900 dark:text-blue-200 uppercase tracking-wide">
+                                Simulação do Chão de Fábrica (Injetora em Produção)
+                            </h3>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Esta interface simula o comportamento real da <strong>Injetora Industrial</strong> trabalhando na indústria. Ao ligar a máquina, o sistema passa a receber os dados térmicos em tempo real para monitoramento preditivo e análise de falhas.
                         </p>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full md:w-auto justify-end">
                     <button
                         disabled={loading || autoRunning}
                         onClick={handleAutoSimulation}
                         className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer flex-1 sm:flex-initial justify-center ${autoRunning
                                 ? 'bg-indigo-400 text-white cursor-not-allowed animate-pulse'
-                                : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-indigo-500/30'
+                                : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-500/30'
                             }`}
                     >
                         {autoRunning ? (
                             <>
                                 <RefreshCw className="w-4 h-4 animate-spin" />
-                                <span>Simulação Automática ({autoCount}/5)</span>
+                                <span>Máquina Operando ({autoCount}/5)</span>
                             </>
                         ) : (
                             <>
-                                <Bot className="w-4 h-4" />
-                                <span>Simulação Automática (Máquina Virtual)</span>
+                                <Play className="w-4 h-4 fill-current" />
+                                <span>▶ Ligar Máquina / Iniciar Produção</span>
                             </>
                         )}
                     </button>
@@ -143,19 +162,19 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({ onEventSimulated
                         className="px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                     >
                         <Touchpad className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        <span>Opção Manual</span>
+                        <span>Painel Manual</span>
                         {showManualButtons ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
                 </div>
             </div>
 
             {autoRunning && (
-                <div className="mb-5 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200 flex items-center justify-between gap-3 text-xs sm:text-sm font-semibold animate-pulse">
+                <div className="mb-5 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 flex items-center justify-between gap-3 text-xs sm:text-sm font-semibold animate-pulse">
                     <div className="flex items-center gap-2">
-                        <RefreshCw className="w-4 h-4 animate-spin text-indigo-600 dark:text-indigo-400 shrink-0" />
-                        <span>Executando disparo automático: ciclo <strong>{autoCount}</strong> de 5 (Intervalo de 5s entre disparos)</span>
+                        <RefreshCw className="w-4 h-4 animate-spin text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span>Injetora em produção ativa: enviando telemetria térmica (ciclo <strong>{autoCount}</strong> de 5 - Intervalo de 5s)</span>
                     </div>
-                    <span className="font-mono text-xs uppercase bg-indigo-200 dark:bg-indigo-900 px-2 py-0.5 rounded">Faltam {5 - autoCount} ciclos</span>
+                    <span className="font-mono text-xs uppercase bg-emerald-200 dark:bg-emerald-900 px-2 py-0.5 rounded">Restam {5 - autoCount} ciclos</span>
                 </div>
             )}
 
@@ -164,9 +183,9 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({ onEventSimulated
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-slate-800">
                         <div>
                             <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>Simulador de Cenários da Injetora</span>
+                                <span>Controle de Cenários Industriais</span>
                             </h2>
-                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Selecione o local e toque no botão de teste desejado:</p>
+                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Selecione a zona do canhão de plastificação e teste os estados operacionais da máquina:</p>
                         </div>
 
                         <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-200 dark:border-slate-700 self-start sm:self-auto w-full sm:w-auto">
