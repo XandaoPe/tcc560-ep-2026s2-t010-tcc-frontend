@@ -4,7 +4,7 @@ import { MetricsOverview } from './components/MetricsOverview';
 import { SimulatorPanel } from './components/SimulatorPanel';
 import { StatusDashboard } from './components/StatusDashboard';
 import { fetchEventsHistory } from './services/api';
-import { Loader2, Server, AlertTriangle, ShieldAlert, Flame, CheckCircle2 } from 'lucide-react';
+import { Loader2, Server, ShieldAlert, Flame, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface EventItem {
   _id: string;
@@ -116,7 +116,7 @@ export function App() {
     });
   };
 
-  const handleEventSimulated = (scenarioId: string, zone: string) => {
+  const handleEventSimulated = (scenarioId: string, _zone: string) => {
     loadEvents(filters);
 
     if (scenarioId === 'S1') {
