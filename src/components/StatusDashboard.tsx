@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, AlertTriangle, Flame, Clock, Search, RotateCcw, Filter, Trash2 } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Flame, Clock, Search, RotateCcw, Filter, Trash2, X } from 'lucide-react';
 
 interface EventItem {
     _id: string;
@@ -109,7 +109,7 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
     const isAllSelected = events.length > 0 && selectedIds.length === events.length;
 
     return (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all w-full">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all w-full relative pb-20 sm:pb-0">
             <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
@@ -119,14 +119,6 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">Logs e telemetria persistidos em tempo real no banco de dados.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        {selectedIds.length > 0 && (
-                            <button
-                                onClick={handleBatchDeleteClick}
-                                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" /> Excluir Selecionados ({selectedIds.length})
-                            </button>
-                        )}
                         <div className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             {events.length} registros encontrados
@@ -291,6 +283,36 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                     </tbody>
                 </table>
             </div>
+
+            {/* Barra Flutuante de Ações em Lote (Sempre visível na tela quando houver registros selecionados) */}
+            {selectedIds.length > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 dark:bg-slate-800/95 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700/80 flex items-center gap-4 animate-fade-in backdrop-blur-md max-w-lg w-[92%] sm:w-auto justify-between">
+                    <div className="flex items-center gap-2.5">
+                        <span className="flex h-2 w-2 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                        </span>
+                        <span className="text-xs sm:text-sm font-semibold">
+                            <strong className="text-blue-400 font-mono">{selectedIds.length}</strong> {selectedIds.length === 1 ? 'selecionado' : 'selecionados'}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setSelectedIds([])}
+                            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1"
+                        >
+                            <X className="w-3.5 h-3.5" /> Limpar
+                        </button>
+                        <button
+                            onClick={handleBatchDeleteClick}
+                            className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <Trash2 className="w-4 h-4" /> Excluir ({selectedIds.length})
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
