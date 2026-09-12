@@ -3,7 +3,7 @@ import { Header } from './components/Header';
 import { MetricsOverview } from './components/MetricsOverview';
 import { SimulatorPanel } from './components/SimulatorPanel';
 import { StatusDashboard } from './components/StatusDashboard';
-import { fetchEventsHistory } from './services/api';
+import { fetchEventsHistory, deleteThermalEvent, deleteThermalEventsBatch } from './services/api';
 import { Loader2, Server, ShieldAlert, Flame, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface EventItem {
@@ -118,10 +118,7 @@ export function App() {
 
   const handleDeleteEvent = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/thermal/events/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Erro ao excluir evento');
+      await deleteThermalEvent(id);
       loadEvents(filters);
     } catch (error) {
       console.error('Erro:', error);
@@ -131,14 +128,7 @@ export function App() {
 
   const handleDeleteBatch = async (ids: string[]) => {
     try {
-      const response = await fetch('http://localhost:5000/api/thermal/events/batch-delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ids }),
-      });
-      if (!response.ok) throw new Error('Erro ao excluir eventos em lote');
+      await deleteThermalEventsBatch(ids);
       loadEvents(filters);
     } catch (error) {
       console.error('Erro:', error);
