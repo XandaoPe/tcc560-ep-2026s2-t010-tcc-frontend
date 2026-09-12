@@ -33,6 +33,14 @@ export function App() {
   const [loading, setLoading] = useState(true);
   const [currentAlert, setCurrentAlert] = useState<AlertConfig | null>(null);
 
+  const [filters, setFilters] = useState({
+    search: '',
+    zone: '',
+    severity: '',
+    eventCode: '',
+    timeRange: '1h'
+  });
+
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -52,14 +60,12 @@ export function App() {
       gain.connect(audioCtx.destination);
 
       if (type === 'MEDIUM') {
-        // Sinal sonoro moderado (suave)
         osc.type = 'sine';
         osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.3);
       } else if (type === 'HIGH') {
-        // Sinal sonoro grave/alto
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(440, audioCtx.currentTime);
         osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15);
@@ -67,7 +73,6 @@ export function App() {
         osc.start();
         osc.stop(audioCtx.currentTime + 0.45);
       } else if (type === 'CRITICAL') {
-        // Sinal sonoro crítico (intenso)
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(300, audioCtx.currentTime);
         osc.frequency.setValueAtTime(700, audioCtx.currentTime + 0.1);
@@ -81,18 +86,44 @@ export function App() {
     }
   };
 
-  const handleEventSimulated = (scenarioId: string, zone: string) => {
-    // Atualiza a tabela buscando os dados novos do backend
-    loadEvents();
+  const loadEvents = useCallback(async (currentFilters = filters) => {
+    try {
+      setLoading(true);
+      const data = await fetchEventsHistory(currentFilters);
+      setEvents(data);
+    } catch (error) {
+      console.error('Erro ao carregar histórico:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
 
-    // Regra exata solicitada por você para cada botão:
+  useEffect(() => {
+    loadEvents(filters);
+  }, [filters, loadEvents]);
+
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      search: '',
+      zone: '',
+      severity: '',
+      eventCode: '',
+      timeRange: '1h'
+    });
+  };
+
+  const handleEventSimulated = (scenarioId: string, zone: string) => {
+    loadEvents(filters);
+
     if (scenarioId === 'S1') {
-      // S1: Operação Normal -> Não emite alerta nenhum.
       return;
     }
 
     if (scenarioId === 'S2') {
-      // S2: Excedeu Limite (Moderado)
       playAlertSound('MEDIUM');
       setCurrentAlert({
         title: 'Alerta: Excedeu Limite Térmico',
@@ -102,7 +133,6 @@ export function App() {
         icon: <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-400 animate-pulse" />
       });
     } else if (scenarioId === 'S3') {
-      // S3: Desvio Negativo (Grave / Alto)
       playAlertSound('HIGH');
       setCurrentAlert({
         title: 'Alerta: Desvio Negativo de Temperatura',
@@ -112,7 +142,6 @@ export function App() {
         icon: <ShieldAlert className="w-8 h-8 text-orange-600 dark:text-orange-400 animate-bounce" />
       });
     } else if (scenarioId === 'S4') {
-      // S4: Queima / Band Break (Crítico)
       playAlertSound('CRITICAL');
       setCurrentAlert({
         title: 'Alerta Crítico: Queima de Resistência (Band Break)',
@@ -122,7 +151,6 @@ export function App() {
         icon: <Flame className="w-8 h-8 text-red-600 dark:text-red-400 animate-pulse" />
       });
     } else if (scenarioId === 'S5') {
-      // S5: Bloqueio de Produção / CLP (Crítico)
       playAlertSound('CRITICAL');
       setCurrentAlert({
         title: 'Alerta Crítico: Bloqueio de Produção (CLP)',
@@ -134,27 +162,10 @@ export function App() {
     }
   };
 
-  const loadEvents = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await fetchEventsHistory();
-      setEvents(data);
-    } catch (error) {
-      console.error('Erro ao carregar histórico:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
-
   return (
     <div className="min-h-screen w-full bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 pb-12 relative overflow-x-hidden">
       <Header darkMode={darkMode} setDarkMode={setDarkMode} />
 
-      {/* Alerta Flutuante na Tela */}
       {currentAlert && (
         <div className="fixed inset-0 bg-slate-900/70 dark:bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className={`border-2 rounded-3xl p-6 sm:p-8 shadow-2xl max-w-lg w-full flex flex-col items-center text-center transition-all transform scale-100 ${currentAlert.bg}`}>
@@ -212,7 +223,12 @@ export function App() {
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 space-y-6">
         <MetricsOverview events={events} />
         <SimulatorPanel onEventSimulated={handleEventSimulated} />
-        <StatusDashboard events={events} />
+        <StatusDashboard
+          events={events}
+          onFilterChange={handleFilterChange}
+          onClearFilters={handleClearFilters}
+          currentFilters={filters}
+        />
       </main>
     </div>
   );
