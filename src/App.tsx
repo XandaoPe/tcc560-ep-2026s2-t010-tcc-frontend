@@ -3,8 +3,8 @@ import { Header } from './components/Header';
 import { MetricsOverview } from './components/MetricsOverview';
 import { SimulatorPanel } from './components/SimulatorPanel';
 import { StatusDashboard } from './components/StatusDashboard';
-import { fetchEventsHistory, deleteThermalEvent, deleteThermalEventsBatch } from './services/api';
-import { Loader2, Server, ShieldAlert, Flame, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { fetchEventsHistory, deleteThermalEvent, deleteThermalEventsBatch, triggerSimulation } from './services/api';
+import { Loader2, Server, ShieldAlert, Flame, CheckCircle2, AlertTriangle, Thermometer, MapPin, Target, Activity } from 'lucide-react';
 
 interface EventItem {
   _id: string;
@@ -25,6 +25,10 @@ interface AlertConfig {
   severity: string;
   bg: string;
   icon: any;
+  value: number;
+  zone: string;
+  setpointC: number;
+  assetId: string;
 }
 
 export function App() {
@@ -136,49 +140,78 @@ export function App() {
     }
   };
 
-  const handleEventSimulated = (scenarioId: string, _zone: string) => {
-    loadEvents(filters);
+  const handleEventSimulated = async (scenarioId: string, targetZone: string) => {
+    // Recarrega os eventos e aguarda o retorno para obter o evento gerado mais recentemente
+    try {
+      const data = await fetchEventsHistory(filters);
+      setEvents(data);
 
-    if (scenarioId === 'S1') {
-      return;
-    }
+      // Pega o evento recém-criado (topo da lista) para extrair os dados dinâmicos reais da simulação
+      const latestEvent = data && data.length > 0 ? data[0] : null;
+      const eventValue = latestEvent ? latestEvent.value : (scenarioId === 'S1' ? 220.0 : scenarioId === 'S2' ? 255.5 : scenarioId === 'S3' ? 185.0 : scenarioId === 'S4' ? 25.0 : 0.0);
+      const eventZone = latestEvent ? latestEvent.zone : targetZone;
+      const eventSetpoint = latestEvent ? latestEvent.setpointC : 220.0;
+      const assetId = latestEvent ? latestEvent.assetId : 'ROMI-SIM-01';
 
-    if (scenarioId === 'S2') {
-      playAlertSound('MEDIUM');
-      setCurrentAlert({
-        title: 'Alerta: Excedeu Limite Térmico',
-        code: 'S2_EXCEED_LIMIT',
-        severity: 'MODERADO',
-        bg: 'bg-amber-50 dark:bg-amber-950/90 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-100',
-        icon: <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-400 animate-pulse" />
-      });
-    } else if (scenarioId === 'S3') {
-      playAlertSound('HIGH');
-      setCurrentAlert({
-        title: 'Alerta: Desvio Negativo de Temperatura',
-        code: 'S3_NEGATIVE_DEVIATION',
-        severity: 'ALTO',
-        bg: 'bg-orange-50 dark:bg-orange-950/90 border-orange-300 dark:border-orange-800 text-orange-900 dark:text-orange-100',
-        icon: <ShieldAlert className="w-8 h-8 text-orange-600 dark:text-orange-400 animate-bounce" />
-      });
-    } else if (scenarioId === 'S4') {
-      playAlertSound('CRITICAL');
-      setCurrentAlert({
-        title: 'Alerta Crítico: Queima de Resistência (Band Break)',
-        code: 'S4_BAND_BREAK',
-        severity: 'CRÍTICO',
-        bg: 'bg-red-50 dark:bg-red-950/90 border-red-300 dark:border-red-800 text-red-900 dark:text-red-100',
-        icon: <Flame className="w-8 h-8 text-red-600 dark:text-red-400 animate-pulse" />
-      });
-    } else if (scenarioId === 'S5') {
-      playAlertSound('CRITICAL');
-      setCurrentAlert({
-        title: 'Alerta Crítico: Bloqueio de Produção (CLP)',
-        code: 'S5_INTERLOCK_BLOCK',
-        severity: 'CRÍTICO',
-        bg: 'bg-purple-50 dark:bg-purple-950/90 border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-100',
-        icon: <ShieldAlert className="w-8 h-8 text-purple-600 dark:text-purple-400 animate-pulse" />
-      });
+      if (scenarioId === 'S1') {
+        return;
+      }
+
+      if (scenarioId === 'S2') {
+        playAlertSound('MEDIUM');
+        setCurrentAlert({
+          title: 'Alerta: Excedeu Limite Térmico',
+          code: 'S2_EXCEED_LIMIT',
+          severity: 'MODERADO',
+          bg: 'bg-amber-50 dark:bg-amber-950/90 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-100',
+          icon: <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-400 animate-pulse" />,
+          value: eventValue,
+          zone: eventZone,
+          setpointC: eventSetpoint,
+          assetId: assetId
+        });
+      } else if (scenarioId === 'S3') {
+        playAlertSound('HIGH');
+        setCurrentAlert({
+          title: 'Alerta: Desvio Negativo de Temperatura',
+          code: 'S3_NEGATIVE_DEVIATION',
+          severity: 'ALTO',
+          bg: 'bg-orange-50 dark:bg-orange-950/90 border-orange-300 dark:border-orange-800 text-orange-900 dark:text-orange-100',
+          icon: <ShieldAlert className="w-8 h-8 text-orange-600 dark:text-orange-400 animate-bounce" />,
+          value: eventValue,
+          zone: eventZone,
+          setpointC: eventSetpoint,
+          assetId: assetId
+        });
+      } else if (scenarioId === 'S4') {
+        playAlertSound('CRITICAL');
+        setCurrentAlert({
+          title: 'Alerta Crítico: Queima de Resistência (Band Break)',
+          code: 'S4_BAND_BREAK',
+          severity: 'CRÍTICO',
+          bg: 'bg-red-50 dark:bg-red-950/90 border-red-300 dark:border-red-800 text-red-900 dark:text-red-100',
+          icon: <Flame className="w-8 h-8 text-red-600 dark:text-red-400 animate-pulse" />,
+          value: eventValue,
+          zone: eventZone,
+          setpointC: eventSetpoint,
+          assetId: assetId
+        });
+      } else if (scenarioId === 'S5') {
+        playAlertSound('CRITICAL');
+        setCurrentAlert({
+          title: 'Alerta Crítico: Bloqueio de Produção (CLP)',
+          code: 'S5_INTERLOCK_BLOCK',
+          severity: 'CRÍTICO',
+          bg: 'bg-purple-50 dark:bg-purple-950/90 border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-100',
+          icon: <ShieldAlert className="w-8 h-8 text-purple-600 dark:text-purple-400 animate-pulse" />,
+          value: eventValue,
+          zone: eventZone,
+          setpointC: eventSetpoint,
+          assetId: assetId
+        });
+      }
+    } catch (e) {
+      console.error('Erro ao processar alerta simulado:', e);
     }
   };
 
@@ -189,17 +222,60 @@ export function App() {
       {currentAlert && (
         <div className="fixed inset-0 bg-slate-900/70 dark:bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className={`border-2 rounded-3xl p-6 sm:p-8 shadow-2xl max-w-lg w-full flex flex-col items-center text-center transition-all transform scale-100 ${currentAlert.bg}`}>
-            <div className="p-4 bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-inner mb-4">
+            <div className="p-4 bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-inner mb-3">
               {currentAlert.icon}
             </div>
             <h2 className="text-xl sm:text-2xl font-black mb-1 uppercase tracking-wider">
               {currentAlert.title}
             </h2>
-            <p className="text-xs sm:text-sm font-semibold opacity-80 mb-5">
+            <p className="text-xs sm:text-sm font-semibold opacity-80 mb-4">
               Status do Evento: <span className="font-mono uppercase underline font-bold">{currentAlert.severity}</span>
             </p>
 
-            <div className="w-full bg-white/60 dark:bg-slate-900/60 p-4 rounded-2xl mb-6 text-left border border-black/5 dark:border-white/10 flex justify-between items-center">
+            {/* Grid Detalhado com Temperatura, Zona, Setpoint e Ativo */}
+            <div className="w-full grid grid-cols-2 gap-2.5 mb-5 text-left">
+              <div className="bg-white/70 dark:bg-slate-900/70 p-3 rounded-xl border border-black/5 dark:border-white/10 flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded-lg">
+                  <Thermometer className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase font-bold opacity-60">Temperatura Medida</span>
+                  <span className="text-sm sm:text-base font-black font-mono">{currentAlert.value} °C</span>
+                </div>
+              </div>
+
+              <div className="bg-white/70 dark:bg-slate-900/70 p-3 rounded-xl border border-black/5 dark:border-white/10 flex items-center gap-3">
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded-lg">
+                  <Target className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase font-bold opacity-60">Setpoint Industrial</span>
+                  <span className="text-sm sm:text-base font-black font-mono">{currentAlert.setpointC} °C</span>
+                </div>
+              </div>
+
+              <div className="bg-white/70 dark:bg-slate-900/70 p-3 rounded-xl border border-black/5 dark:border-white/10 flex items-center gap-3">
+                <div className="p-2 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase font-bold opacity-60">Zona Alvo</span>
+                  <span className="text-xs sm:text-sm font-bold font-mono">{currentAlert.zone}</span>
+                </div>
+              </div>
+
+              <div className="bg-white/70 dark:bg-slate-900/70 p-3 rounded-xl border border-black/5 dark:border-white/10 flex items-center gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 rounded-lg">
+                  <Activity className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase font-bold opacity-60">Ativo / Máquina</span>
+                  <span className="text-xs sm:text-sm font-bold font-mono">{currentAlert.assetId}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="w-full bg-white/60 dark:bg-slate-900/60 p-3.5 rounded-xl mb-6 text-left border border-black/5 dark:border-white/10 flex justify-between items-center">
               <div>
                 <span className="block text-[10px] uppercase font-bold opacity-60">Código da Ocorrência</span>
                 <span className="text-xs sm:text-sm font-mono font-bold">{currentAlert.code}</span>
