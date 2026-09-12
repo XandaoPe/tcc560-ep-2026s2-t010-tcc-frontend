@@ -23,3 +23,13 @@ export const fetchEventsHistory = async (filters?: { search?: string; zone?: str
     const response = await api.get(`/events?${params.toString()}`);
     return response.data;
 };
+
+export const deleteThermalEvent = async (id: string) => {
+    const response = await api.delete(`/events/${id}`);
+    return response.data;
+};
+
+export const deleteThermalEventsBatch = async (ids: string[]) => {
+    const response = await api.post('/events/batch-delete', { ids });
+    return response.data;
+};
