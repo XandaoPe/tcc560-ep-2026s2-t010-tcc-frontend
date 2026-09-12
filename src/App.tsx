@@ -116,6 +116,36 @@ export function App() {
     });
   };
 
+  const handleDeleteEvent = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/thermal/events/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Erro ao excluir evento');
+      loadEvents(filters);
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Não foi possível excluir o evento.');
+    }
+  };
+
+  const handleDeleteBatch = async (ids: string[]) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/thermal/events/batch-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids }),
+      });
+      if (!response.ok) throw new Error('Erro ao excluir eventos em lote');
+      loadEvents(filters);
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Não foi possível excluir os eventos selecionados.');
+    }
+  };
+
   const handleEventSimulated = (scenarioId: string, _zone: string) => {
     loadEvents(filters);
 
@@ -228,6 +258,8 @@ export function App() {
           onFilterChange={handleFilterChange}
           onClearFilters={handleClearFilters}
           currentFilters={filters}
+          onDeleteEvent={handleDeleteEvent}
+          onDeleteBatch={handleDeleteBatch}
         />
       </main>
     </div>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { CheckCircle2, AlertTriangle, Flame, Clock, Search, RotateCcw, Filter } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, AlertTriangle, Flame, Clock, Search, RotateCcw, Filter, Trash2 } from 'lucide-react';
 
 interface EventItem {
     _id: string;
@@ -19,14 +19,20 @@ interface StatusDashboardProps {
     onFilterChange: (filters: { search: string; zone: string; severity: string; eventCode: string; timeRange: string }) => void;
     onClearFilters: () => void;
     currentFilters: { search: string; zone: string; severity: string; eventCode: string; timeRange: string };
+    onDeleteEvent: (id: string) => void;
+    onDeleteBatch: (ids: string[]) => void;
 }
 
 export const StatusDashboard: React.FC<StatusDashboardProps> = ({
     events,
     onFilterChange,
     onClearFilters,
-    currentFilters
+    currentFilters,
+    onDeleteEvent,
+    onDeleteBatch
 }) => {
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
     const getSeverityBadge = (severity: string) => {
         switch (severity) {
             case 'NONE':
@@ -69,6 +75,39 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
         });
     };
 
+    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+            setSelectedIds(events.map(ev => ev._id));
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+    const handleSelectOne = (id: string) => {
+        if (selectedIds.includes(id)) {
+            setSelectedIds(selectedIds.filter(item => item !== id));
+        } else {
+            setSelectedIds([...selectedIds, id]);
+        }
+    };
+
+    const handleBatchDeleteClick = () => {
+        if (selectedIds.length === 0) return;
+        if (confirm(`Deseja realmente excluir os ${selectedIds.length} registros selecionados?`)) {
+            onDeleteBatch(selectedIds);
+            setSelectedIds([]);
+        }
+    };
+
+    const handleSingleDeleteClick = (id: string) => {
+        if (confirm('Deseja realmente excluir este registro?')) {
+            onDeleteEvent(id);
+            setSelectedIds(selectedIds.filter(item => item !== id));
+        }
+    };
+
+    const isAllSelected = events.length > 0 && selectedIds.length === events.length;
+
     return (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all w-full">
             <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col gap-4">
@@ -79,9 +118,19 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                         </h2>
                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">Logs e telemetria persistidos em tempo real no banco de dados.</p>
                     </div>
-                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl self-start sm:self-auto flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        {events.length} registros encontrados
+                    <div className="flex items-center gap-3">
+                        {selectedIds.length > 0 && (
+                            <button
+                                onClick={handleBatchDeleteClick}
+                                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" /> Excluir Selecionados ({selectedIds.length})
+                            </button>
+                        )}
+                        <div className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            {events.length} registros encontrados
+                        </div>
                     </div>
                 </div>
 
@@ -100,7 +149,6 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
-                        {/* Busca Geral */}
                         <div className="relative">
                             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                             <input
@@ -112,7 +160,6 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                             />
                         </div>
 
-                        {/* Filtro por Zona */}
                         <select
                             value={currentFilters.zone}
                             onChange={(e) => handleChange('zone', e.target.value)}
@@ -125,7 +172,6 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                             <option value="ZONA_4">Zona 4 (Bico)</option>
                         </select>
 
-                        {/* Filtro por Severidade */}
                         <select
                             value={currentFilters.severity}
                             onChange={(e) => handleChange('severity', e.target.value)}
@@ -138,7 +184,6 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                             <option value="CRITICAL">Crítico (CRITICAL)</option>
                         </select>
 
-                        {/* Filtro por Código de Evento */}
                         <select
                             value={currentFilters.eventCode}
                             onChange={(e) => handleChange('eventCode', e.target.value)}
@@ -152,7 +197,6 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                             <option value="PRODUCTION_LOCKOUT">PRODUCTION_LOCKOUT</option>
                         </select>
 
-                        {/* Filtro por Período de Tempo */}
                         <select
                             value={currentFilters.timeRange}
                             onChange={(e) => handleChange('timeRange', e.target.value)}
@@ -171,17 +215,26 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                 <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left">
                     <thead className="bg-slate-50 dark:bg-slate-950/50">
                         <tr>
+                            <th className="px-4 py-3.5 w-10 text-center">
+                                <input
+                                    type="checkbox"
+                                    checked={isAllSelected}
+                                    onChange={handleSelectAll}
+                                    className="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                />
+                            </th>
                             <th className="px-4 sm:px-6 py-3.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Ativo / Zona</th>
                             <th className="px-4 sm:px-6 py-3.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Temp. vs Setpoint</th>
                             <th className="px-4 sm:px-6 py-3.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Código do Evento</th>
                             <th className="px-4 sm:px-6 py-3.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Severidade</th>
-                            <th className="px-4 sm:px-6 py-3.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Timestamp (Recente primeiro)</th>
+                            <th className="px-4 sm:px-6 py-3.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Timestamp</th>
+                            <th className="px-4 sm:px-6 py-3.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 text-right">Ações</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
                         {events.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
+                                <td colSpan={7} className="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
                                     <div className="flex flex-col items-center justify-center space-y-3">
                                         <div className="p-3.5 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-400">
                                             <Clock className="w-6 h-6" />
@@ -191,29 +244,49 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                                 </td>
                             </tr>
                         ) : (
-                            events.map((ev) => (
-                                <tr key={ev._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
-                                        <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{ev.assetId}</div>
-                                        <div className="text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 font-semibold">{ev.zone}</div>
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
-                                        <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{ev.value} °C</div>
-                                        <div className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500">Target: {ev.setpointC} °C</div>
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
-                                        <span className="px-2 py-1 text-[10px] sm:text-xs font-mono font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg">
-                                            {ev.eventCode}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
-                                        {getSeverityBadge(ev.severity)}
-                                    </td>
-                                    <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
-                                        {new Date(ev.createdAt).toLocaleString()}
-                                    </td>
-                                </tr>
-                            ))
+                            events.map((ev) => {
+                                const isSelected = selectedIds.includes(ev._id);
+                                return (
+                                    <tr key={ev._id} className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${isSelected ? 'bg-blue-50/60 dark:bg-blue-950/30' : ''}`}>
+                                        <td className="px-4 py-3.5 text-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={isSelected}
+                                                onChange={() => handleSelectOne(ev._id)}
+                                                className="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                            />
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
+                                            <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{ev.assetId}</div>
+                                            <div className="text-[11px] sm:text-xs text-blue-600 dark:text-blue-400 font-semibold">{ev.zone}</div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
+                                            <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{ev.value} °C</div>
+                                            <div className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500">Target: {ev.setpointC} °C</div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
+                                            <span className="px-2 py-1 text-[10px] sm:text-xs font-mono font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg">
+                                                {ev.eventCode}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
+                                            {getSeverityBadge(ev.severity)}
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
+                                            {new Date(ev.createdAt).toLocaleString()}
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap text-right">
+                                            <button
+                                                onClick={() => handleSingleDeleteClick(ev._id)}
+                                                title="Excluir Registro"
+                                                className="p-1.5 bg-slate-100 hover:bg-red-100 dark:bg-slate-800 dark:hover:bg-red-950 text-slate-600 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer inline-flex items-center justify-center"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
