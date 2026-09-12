@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cpu, Sun, Moon, Smartphone } from 'lucide-react';
+import { Cpu, Sun, Moon } from 'lucide-react';
 
 interface HeaderProps {
     darkMode: boolean;
