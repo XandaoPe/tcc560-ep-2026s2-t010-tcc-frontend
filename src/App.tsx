@@ -3,7 +3,7 @@ import { Header } from './components/Header';
 import { MetricsOverview } from './components/MetricsOverview';
 import { SimulatorPanel } from './components/SimulatorPanel';
 import { StatusDashboard } from './components/StatusDashboard';
-import { fetchEventsHistory, deleteThermalEvent, deleteThermalEventsBatch, triggerSimulation } from './services/api';
+import { fetchEventsHistory, deleteThermalEvent, deleteThermalEventsBatch } from './services/api';
 import { Loader2, Server, ShieldAlert, Flame, CheckCircle2, AlertTriangle, Thermometer, MapPin, Target, Activity } from 'lucide-react';
 
 interface EventItem {
@@ -53,7 +53,7 @@ export function App() {
     }
   }, [darkMode]);
 
-  const playAlertSound = (type: 'MEDIUM' | 'HIGH' | 'CRITICAL') => {
+  const playAlertSound = (type: 'MODERATE' | 'HIGH' | 'CRITICAL') => {
     try {
       const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) return;
@@ -63,7 +63,7 @@ export function App() {
       osc.connect(gain);
       gain.connect(audioCtx.destination);
 
-      if (type === 'MEDIUM') {
+      if (type === 'MODERATE') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
@@ -141,16 +141,14 @@ export function App() {
   };
 
   const handleEventSimulated = async (scenarioId: string, targetZone: string) => {
-    // Recarrega os eventos e aguarda o retorno para obter o evento gerado mais recentemente
     try {
       const data = await fetchEventsHistory(filters);
       setEvents(data);
 
-      // Pega o evento recém-criado (topo da lista) para extrair os dados dinâmicos reais da simulação
       const latestEvent = data && data.length > 0 ? data[0] : null;
-      const eventValue = latestEvent ? latestEvent.value : (scenarioId === 'S1' ? 220.0 : scenarioId === 'S2' ? 255.5 : scenarioId === 'S3' ? 185.0 : scenarioId === 'S4' ? 25.0 : 0.0);
+      const eventValue = latestEvent ? latestEvent.value : 65.0;
       const eventZone = latestEvent ? latestEvent.zone : targetZone;
-      const eventSetpoint = latestEvent ? latestEvent.setpointC : 220.0;
+      const eventSetpoint = latestEvent ? latestEvent.setpointC : 65.0;
       const assetId = latestEvent ? latestEvent.assetId : 'ROMI-SIM-01';
 
       if (scenarioId === 'S1') {
@@ -158,10 +156,10 @@ export function App() {
       }
 
       if (scenarioId === 'S2') {
-        playAlertSound('MEDIUM');
+        playAlertSound('MODERATE');
         setCurrentAlert({
-          title: 'Alerta: Excedeu Limite Térmico',
-          code: 'S2_EXCEED_LIMIT',
+          title: 'Alerta: Temperatura Moderada (70°C)',
+          code: 'S2_MODERATE_TEMP',
           severity: 'MODERADO',
           bg: 'bg-amber-50 dark:bg-amber-950/90 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-100',
           icon: <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-400 animate-pulse" />,
@@ -173,8 +171,8 @@ export function App() {
       } else if (scenarioId === 'S3') {
         playAlertSound('HIGH');
         setCurrentAlert({
-          title: 'Alerta: Desvio Negativo de Temperatura',
-          code: 'S3_NEGATIVE_DEVIATION',
+          title: 'Alerta: Temperatura Alta (55°C)',
+          code: 'S3_HIGH_TEMP',
           severity: 'ALTO',
           bg: 'bg-orange-50 dark:bg-orange-950/90 border-orange-300 dark:border-orange-800 text-orange-900 dark:text-orange-100',
           icon: <ShieldAlert className="w-8 h-8 text-orange-600 dark:text-orange-400 animate-bounce" />,
@@ -186,8 +184,8 @@ export function App() {
       } else if (scenarioId === 'S4') {
         playAlertSound('CRITICAL');
         setCurrentAlert({
-          title: 'Alerta Crítico: Queima de Resistência (Band Break)',
-          code: 'S4_BAND_BREAK',
+          title: 'Alerta Crítico: Temperatura 72°C',
+          code: 'S4_CRITICAL_72',
           severity: 'CRÍTICO',
           bg: 'bg-red-50 dark:bg-red-950/90 border-red-300 dark:border-red-800 text-red-900 dark:text-red-100',
           icon: <Flame className="w-8 h-8 text-red-600 dark:text-red-400 animate-pulse" />,
@@ -199,8 +197,8 @@ export function App() {
       } else if (scenarioId === 'S5') {
         playAlertSound('CRITICAL');
         setCurrentAlert({
-          title: 'Alerta Crítico: Bloqueio de Produção (CLP)',
-          code: 'S5_INTERLOCK_BLOCK',
+          title: 'Alerta Crítico: Temperatura 74°C',
+          code: 'S5_CRITICAL_74',
           severity: 'CRÍTICO',
           bg: 'bg-purple-50 dark:bg-purple-950/90 border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-100',
           icon: <ShieldAlert className="w-8 h-8 text-purple-600 dark:text-purple-400 animate-pulse" />,
@@ -232,7 +230,6 @@ export function App() {
               Status do Evento: <span className="font-mono uppercase underline font-bold">{currentAlert.severity}</span>
             </p>
 
-            {/* Grid Detalhado com Temperatura, Zona, Setpoint e Ativo */}
             <div className="w-full grid grid-cols-2 gap-2.5 mb-5 text-left">
               <div className="bg-white/70 dark:bg-slate-900/70 p-3 rounded-xl border border-black/5 dark:border-white/10 flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded-lg">

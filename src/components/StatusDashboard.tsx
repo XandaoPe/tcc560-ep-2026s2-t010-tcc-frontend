@@ -35,28 +35,28 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
 
     const getSeverityBadge = (severity: string) => {
         switch (severity) {
-            case 'NONE':
+            case 'NORMAL':
                 return (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
-                        <CheckCircle2 className="w-3 h-3" /> Normal
+                        <CheckCircle2 className="w-3 h-3" /> Normal (65°C)
                     </span>
                 );
-            case 'MEDIUM':
+            case 'MODERATE':
                 return (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
-                        <AlertTriangle className="w-3 h-3" /> Moderado
+                        <AlertTriangle className="w-3 h-3" /> Moderado (70°C)
                     </span>
                 );
             case 'HIGH':
                 return (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-900">
-                        <AlertTriangle className="w-3 h-3" /> Alto
+                        <AlertTriangle className="w-3 h-3" /> Alto (55°C)
                     </span>
                 );
             case 'CRITICAL':
                 return (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900">
-                        <Flame className="w-3 h-3" /> Crítico
+                        <Flame className="w-3 h-3" /> Crítico (72°C/74°C)
                     </span>
                 );
             default:
@@ -126,7 +126,6 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                     </div>
                 </div>
 
-                {/* Barra de Filtros e Pesquisa */}
                 <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700/80 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
@@ -170,8 +169,8 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                             className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">Todas as Severidades</option>
-                            <option value="NONE">Normal (NONE)</option>
-                            <option value="MEDIUM">Moderado (MEDIUM)</option>
+                            <option value="NORMAL">Normal (NORMAL)</option>
+                            <option value="MODERATE">Moderado (MODERATE)</option>
                             <option value="HIGH">Alto (HIGH)</option>
                             <option value="CRITICAL">Crítico (CRITICAL)</option>
                         </select>
@@ -183,10 +182,10 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                         >
                             <option value="">Todos os Códigos</option>
                             <option value="NORMAL">NORMAL</option>
-                            <option value="HEATING_LIMIT_EXCEEDED">HEATING_LIMIT_EXCEEDED</option>
-                            <option value="NEGATIVE_TEMP_DEVIATION">NEGATIVE_TEMP_DEVIATION</option>
-                            <option value="BAND_BREAK_TOTAL_FAILURE">BAND_BREAK_TOTAL_FAILURE</option>
-                            <option value="PRODUCTION_LOCKOUT">PRODUCTION_LOCKOUT</option>
+                            <option value="MODERATE_TEMP_EXCEEDED">MODERATE_TEMP_EXCEEDED</option>
+                            <option value="HIGH_TEMP_DEVIATION">HIGH_TEMP_DEVIATION</option>
+                            <option value="CRITICAL_TEMP_72">CRITICAL_TEMP_72</option>
+                            <option value="CRITICAL_TEMP_74">CRITICAL_TEMP_74</option>
                         </select>
 
                         <select
@@ -284,7 +283,6 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                 </table>
             </div>
 
-            {/* Barra Flutuante de Ações em Lote (Sempre visível na tela quando houver registros selecionados) */}
             {selectedIds.length > 0 && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 dark:bg-slate-800/95 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700/80 flex items-center gap-4 animate-fade-in backdrop-blur-md max-w-lg w-[92%] sm:w-auto justify-between">
                     <div className="flex items-center gap-2.5">

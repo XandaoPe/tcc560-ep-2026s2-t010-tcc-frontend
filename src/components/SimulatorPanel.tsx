@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { triggerSimulation } from '../services/api';
-import { Play, ShieldAlert, AlertTriangle, CheckCircle, Zap, Flame, RefreshCw, Touchpad, MousePointerClick, Sliders, Bot, ChevronDown, ChevronUp, Factory } from 'lucide-react';
+import { Play, ShieldAlert, AlertTriangle, CheckCircle, Zap, Flame, RefreshCw, Touchpad, MousePointerClick, Sliders, ChevronDown, ChevronUp, Factory } from 'lucide-react';
 
 interface SimulatorPanelProps {
     onEventSimulated: (scenarioId: string, zone: string) => void;
@@ -56,57 +56,55 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({ onEventSimulated
     const scenarios = [
         {
             id: 'S1',
-            title: 'S1: Operação Normal',
-            desc: 'Temperatura estável no setpoint de 220°C sem desvios.',
+            title: 'S1: Normal (65°C)',
+            desc: 'Temperatura estável no setpoint de 65°C com variação de 15%.',
             color: 'bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white shadow-emerald-500/30',
             border: 'border-emerald-400/30',
             icon: <CheckCircle className="w-4 h-4" />,
-            actionText: 'Simular Operação Normal'
+            actionText: 'Simular Normal'
         },
         {
             id: 'S2',
-            title: 'S2: Excedeu Limite',
-            desc: 'Aquecimento moderado acima do patamar industrial ideal.',
+            title: 'S2: Moderado (70°C)',
+            desc: 'Temperatura moderada atingindo 70°C com variação de 15%.',
             color: 'bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white shadow-amber-500/30',
             border: 'border-amber-400/30',
             icon: <Zap className="w-4 h-4" />,
-            actionText: 'Simular Excesso Térmico'
+            actionText: 'Simular Moderado'
         },
         {
             id: 'S3',
-            title: 'S3: Desvio Negativo',
-            desc: 'Queda térmica brusca detectada na zona selecionada.',
+            title: 'S3: Alto (55°C)',
+            desc: 'Temperatura alta detectada atingindo 55°C com variação de 15%.',
             color: 'bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white shadow-orange-500/30',
             border: 'border-orange-400/30',
             icon: <AlertTriangle className="w-4 h-4" />,
-            actionText: 'Simular Queda de Temp.'
+            actionText: 'Simular Alto'
         },
         {
             id: 'S4',
-            title: 'S4: Queima (Band Break)',
-            desc: 'Falha crítica e total na resistência de aquecimento.',
+            title: 'S4: Crítico (72°C)',
+            desc: 'Patamar crítico de 72°C atingido com variação de 15%.',
             color: 'bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-red-500/30',
             border: 'border-red-400/30',
             icon: <Flame className="w-4 h-4" />,
-            actionText: 'Simular Queima Crítica'
+            actionText: 'Simular Crítico 72°C'
         },
         {
             id: 'S5',
-            title: 'S5: Bloqueio Produção',
-            desc: 'Interlock de segurança acionado pelo CLP do sistema.',
+            title: 'S5: Crítico (74°C)',
+            desc: 'Patamar crítico máximo de 74°C atingido com variação de 15%.',
             color: 'bg-gradient-to-br from-purple-700 to-purple-800 hover:from-purple-600 hover:to-purple-700 text-white shadow-purple-500/30',
             border: 'border-purple-400/30',
             icon: <ShieldAlert className="w-4 h-4" />,
-            actionText: 'Simular Bloqueio CLP'
+            actionText: 'Simular Crítico 74°C'
         }
     ];
 
     return (
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mb-4 sm:mb-6 transition-all w-full">
-            {/* Bloco Explicativo com Imagem Real da Máquina no Chão de Fábrica */}
             <div className="bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-blue-600/10 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-blue-950/40 border border-blue-200 dark:border-blue-900/60 p-4 rounded-xl mb-5 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4 w-full md:w-auto">
-                    {/* Imagem Real da Injetora Industrial */}
                     <div className="relative shrink-0 w-24 h-20 sm:w-28 sm:h-22 rounded-xl overflow-hidden border-2 border-blue-500/30 shadow-md">
                         <img
                             src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80"
@@ -130,7 +128,7 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({ onEventSimulated
                             </h3>
                         </div>
                         <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                            Esta interface simula o comportamento real da <strong>Injetora Industrial</strong> trabalhando na indústria. Ao ligar a máquina, o sistema passa a receber os dados térmicos em tempo real para monitoramento preditivo e análise de falhas.
+                            Controle térmico atualizado: Normal (65°C), Moderado (70°C), Alto (55°C), Críticos (72°C e 74°C) com variação de 15%.
                         </p>
                     </div>
                 </div>
@@ -140,8 +138,8 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({ onEventSimulated
                         disabled={loading || autoRunning}
                         onClick={handleAutoSimulation}
                         className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer flex-1 sm:flex-initial justify-center ${autoRunning
-                                ? 'bg-indigo-400 text-white cursor-not-allowed animate-pulse'
-                                : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-500/30'
+                            ? 'bg-indigo-400 text-white cursor-not-allowed animate-pulse'
+                            : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-500/30'
                             }`}
                     >
                         {autoRunning ? (
@@ -185,7 +183,7 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({ onEventSimulated
                             <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 <span>Controle de Cenários Industriais</span>
                             </h2>
-                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Selecione a zona do canhão de plastificação e teste os estados operacionais da máquina:</p>
+                            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Selecione a zona do canhão de plastificação e teste os estados operacionais:</p>
                         </div>
 
                         <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-200 dark:border-slate-700 self-start sm:self-auto w-full sm:w-auto">

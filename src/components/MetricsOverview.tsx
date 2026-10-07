@@ -7,11 +7,11 @@ interface MetricsOverviewProps {
 
 export const MetricsOverview: React.FC<MetricsOverviewProps> = ({ events }) => {
     const totalEvents = events.length;
-    const normalEvents = events.filter(e => e.severity === 'NONE').length;
-    const mediumEvents = events.filter(e => e.severity === 'MEDIUM').length;
+    const normalEvents = events.filter(e => e.severity === 'NORMAL').length;
+    const mediumEvents = events.filter(e => e.severity === 'MODERATE').length;
     const highEvents = events.filter(e => e.severity === 'HIGH').length;
     const criticalEvents = events.filter(e => e.severity === 'CRITICAL').length;
-    const latestTemp = events.length > 0 ? events[0].value : 220.0;
+    const latestTemp = events.length > 0 ? events[0].value : 65.0;
 
     return (
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 mb-4 sm:mb-6">
