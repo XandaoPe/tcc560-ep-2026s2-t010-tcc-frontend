@@ -11,8 +11,8 @@ export const MetricsOverview: React.FC<MetricsOverviewProps> = ({ events }) => {
     const mediumEvents = events.filter(e => e.severity === 'MODERATE').length;
     const highEvents = events.filter(e => e.severity === 'HIGH').length;
     const criticalEvents = events.filter(e => e.severity === 'CRITICAL').length;
-    const latestTemp = events.length > 0 ? events[0].value : 65.0;
-
+    const latestTemp = events.length > 0 ? events[0].value : 65.0
+    
     return (
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-3.5 sm:p-5 rounded-2xl shadow-md flex items-center justify-between col-span-2 lg:col-span-2 transition-all hover:shadow-lg border border-blue-500/30 min-w-0">
