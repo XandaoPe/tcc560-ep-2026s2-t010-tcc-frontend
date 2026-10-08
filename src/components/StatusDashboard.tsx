@@ -157,10 +157,10 @@ export const StatusDashboard: React.FC<StatusDashboardProps> = ({
                             className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">Todas as Zonas</option>
-                            <option value="ZONA_1">Zona 1 (Alimentação)</option>
-                            <option value="ZONA_2">Zona 2 (Compressão)</option>
-                            <option value="ZONA_3">Zona 3 (Dosagem)</option>
-                            <option value="ZONA_4">Zona 4 (Bico)</option>
+                            <option value="ZONA_1">Zona 1 (Spindle)</option>
+                            <option value="ZONA_2">Zona 2 (Motor de Spindle)</option>
+                            <option value="ZONA_3">Zona 3 (Eixos Lineares)</option>
+                            <option value="ZONA_4">Zona 4 (Sistema de Refrigeração)</option>
                         </select>
 
                         <select

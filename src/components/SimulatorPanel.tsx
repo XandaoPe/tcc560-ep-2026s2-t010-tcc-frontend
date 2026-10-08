@@ -124,7 +124,7 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({ onEventSimulated
                                 <MousePointerClick className="w-4 h-4 animate-bounce" />
                             </span>
                             <h3 className="text-xs sm:text-sm font-extrabold text-blue-900 dark:text-blue-200 uppercase tracking-wide">
-                                Simulação do Chão de Fábrica (Injetora em Produção)
+                                Simulação do Chão de Fábrica (ROMI Discovery 560)
                             </h3>
                         </div>
                         <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -194,10 +194,10 @@ export const SimulatorPanel: React.FC<SimulatorPanelProps> = ({ onEventSimulated
                                 onChange={(e) => setZone(e.target.value)}
                                 className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
                             >
-                                <option value="ZONA_1">Zona 1 (Alimentação)</option>
-                                <option value="ZONA_2">Zona 2 (Compressão)</option>
-                                <option value="ZONA_3">Zona 3 (Dosagem)</option>
-                                <option value="ZONA_4">Zona 4 (Bico)</option>
+                                <option value="ZONA_1">Zona 1 (Spindle)</option>
+                                <option value="ZONA_2">Zona 2 (Motor de Spindle)</option>
+                                <option value="ZONA_3">Zona 3 (Eixos Lineares)</option>
+                                <option value="ZONA_4">Zona 4 (Sistema de Refrigeração)</option>
                             </select>
                         </div>
                     </div>
